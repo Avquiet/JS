@@ -1,52 +1,41 @@
-// 1
-var n = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
-var i = 0;
-while ( i < n.length) {
-	console.log(n[i++]);
+// 1 
+var addNum = prompt('Введите число от 0 до 999: ');
+var nobj = {}
+	function numOb() {
+		if(addNum > 0 && addNum < 999) {
+			nobj.ed = addNum % 10;
+			nobj.des = Math.floor(addNum / 10 % 10);
+			nobj.sot = Math.floor(addNum / 100);
+			return nobj;
+
+		} else {
+			console.log('Вы вышли из зоны 999, попробуйте еще!');
+		}
+
+	}
+		numOb(addNum);
+		console.log(nobj);
+
+	
+// 2
+var nAnswer = prompt('Введите номер вопроса в диапозоне от 1 до 3, который вас интересует? ')
+var answers = new Array();
+answers['1'] = 1;
+answers['2'] = 2;
+answers['3'] = 3;
+
+if (nAnswer == 1) {
+        alert(' Ваш вопрос:\n' + works.a00  + ' Ваши ответы:\n' + works.a1 + works.a2);
+    } else if (nAnswer > 3) {
 }
 
-// 2, 3
-var goods = [
-    {
-        title: "Товар 1",
-        price: 100,
-        count: 2
-    },
-    {
-        title: "Товар 2",
-        price: 200,
-        count: 2
-    },
-    {
-        title: "Товар 3",
-        price: 300,
-        count: 2
-    }
-];
-
-
-var s = 0;
-	for(var item of goods) {
-    	s = s + item.price;
-    		console.log(item.title + " стоит " + item.price);
-	}
-
-console.log("Общая сумма товаров = " + s);
-
-
-function countBasketPrice(countBasket) {
-	for(var item of goods) {
-		s = s + item.price
-	}
+if (nAnswer == 2) {
+        alert(' Ваш вопрос:\n' + works.b00  + ' Ваши ответы:\n' + works.b1 + works.b2);
+    } else if (nAnswer > 3) {
 }
-console.log('Сумма товаров: ' + s * item.count);
 
-// 4
-for (var i = 0; i <= 9; console.log(i++));{}
-
-// 5
-var r = 'x';
-	for (var i = 0; i < 20; i++) {
-		r += 'x';
-			console.log(r);
-	}
+if (nAnswer == 3) {
+        alert(' Ваш вопрос:\n' + works.c00  + ' Ваши ответы:\n' + works.c1 + works.c2);
+    } else if (nAnswer > 3) {
+        alert('Вы ввели номер вопроса которого нет, введите номер вопроса еще раз строго от 1 до 3!!!');
+}
