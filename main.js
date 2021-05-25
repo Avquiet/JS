@@ -1,41 +1,43 @@
-// 1 
-var addNum = prompt('Введите число от 0 до 999: ');
-var nobj = {}
-	function numOb() {
-		if(addNum > 0 && addNum < 999) {
-			nobj.ed = addNum % 10;
-			nobj.des = Math.floor(addNum / 10 % 10);
-			nobj.sot = Math.floor(addNum / 100);
-			return nobj;
+function shaxdo() {
+    var oneTb = document.createElement('table'),
+        shs = ['','A','B','C','D','E','F','G','H',''],
+        blackF = ['8','&#9820;','&#9822;','&#9821;','&#9819;','&#9818;','&#9821;','&#9822;','&#9820;','8'],
+        whiteF = ['1','&#9814;','&#9816;','&#9815;','&#9813;','&#9812;','&#9815;','&#9816;','&#9814;','1'],
+        blackFf = ['7','&#9823;','&#9823;','&#9823;','&#9823;','&#9823;','&#9823;','&#9823;','&#9823;','7'],
+        whiteFf = ['2','&#9817;','&#9817;','&#9817;','&#9817;','&#9817;','&#9817;','&#9817;','&#9817;','2'];
+    for (var i = 0, a = 9; i <= 10, a >= 0; i++, a--) {
+    	var oneTr = oneTb.insertRow(i);
+    for (j = 0; j < 10; j++) {
+        var oneTd = oneTr.insertCell(j);
+            switch(i) {
+                case 0: 
+                    oneTd.innerText = shs[j];
+                        break;
+                        case 1:
+                    oneTd.innerHTML = blackF[j];
+                        break;  
+                        case 2:
+                    oneTd.innerHTML = blackFf[j];
+                         break;
+                        case 7:
+                    oneTd.innerHTML = whiteF[j];
+                        break;
+                        case 8:
+                    oneTd.innerHTML = whiteFf[j];
+                        break;
+                        case 9 :
+                    oneTd.innerText = shs[j];
+                        break;
 
-		} else {
-			console.log('Вы вышли из зоны 999, попробуйте еще!');
-		}
+                    	default:
+                            if (j == 0 || j == 9) {
+                                oneTd.innerHTML = a;
+                            }
+                        break;          
+                    }
+                }
+            }
 
-	}
-		numOb(addNum);
-		console.log(nobj);
-
-	
-// 2
-var nAnswer = prompt('Введите номер вопроса в диапозоне от 1 до 3, который вас интересует? ')
-var answers = new Array();
-answers['1'] = 1;
-answers['2'] = 2;
-answers['3'] = 3;
-
-if (nAnswer == 1) {
-        alert(' Ваш вопрос:\n' + works.a00  + ' Ваши ответы:\n' + works.a1 + works.a2);
-    } else if (nAnswer > 3) {
-}
-
-if (nAnswer == 2) {
-        alert(' Ваш вопрос:\n' + works.b00  + ' Ваши ответы:\n' + works.b1 + works.b2);
-    } else if (nAnswer > 3) {
-}
-
-if (nAnswer == 3) {
-        alert(' Ваш вопрос:\n' + works.c00  + ' Ваши ответы:\n' + works.c1 + works.c2);
-    } else if (nAnswer > 3) {
-        alert('Вы ввели номер вопроса которого нет, введите номер вопроса еще раз строго от 1 до 3!!!');
-}
+            document.body.append(oneTb);
+        }
+    shaxdo()
