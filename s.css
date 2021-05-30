@@ -1,0 +1,21 @@
+
+.hide {
+    display: none;
+}
+
+
+.small {
+    display: flex;
+}
+
+#a, #b, #c {
+    margin-top: 50px;
+    margin-right: 100px;
+    border: 3px solid slategrey;
+    margin-bottom: 50px;
+}
+
+#basket {
+    border: 5px solid orangered;
+    color: springgreen;
+}
