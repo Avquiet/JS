@@ -1,43 +1,144 @@
-function shaxdo() {
-    var oneTb = document.createElement('table'),
-        shs = ['','A','B','C','D','E','F','G','H',''],
-        blackF = ['8','&#9820;','&#9822;','&#9821;','&#9819;','&#9818;','&#9821;','&#9822;','&#9820;','8'],
-        whiteF = ['1','&#9814;','&#9816;','&#9815;','&#9813;','&#9812;','&#9815;','&#9816;','&#9814;','1'],
-        blackFf = ['7','&#9823;','&#9823;','&#9823;','&#9823;','&#9823;','&#9823;','&#9823;','&#9823;','7'],
-        whiteFf = ['2','&#9817;','&#9817;','&#9817;','&#9817;','&#9817;','&#9817;','&#9817;','&#9817;','2'];
-    for (var i = 0, a = 9; i <= 10, a >= 0; i++, a--) {
-    	var oneTr = oneTb.insertRow(i);
-    for (j = 0; j < 10; j++) {
-        var oneTd = oneTr.insertCell(j);
-            switch(i) {
-                case 0: 
-                    oneTd.innerText = shs[j];
-                        break;
-                        case 1:
-                    oneTd.innerHTML = blackF[j];
-                        break;  
-                        case 2:
-                    oneTd.innerHTML = blackFf[j];
-                         break;
-                        case 7:
-                    oneTd.innerHTML = whiteF[j];
-                        break;
-                        case 8:
-                    oneTd.innerHTML = whiteFf[j];
-                        break;
-                        case 9 :
-                    oneTd.innerText = shs[j];
-                        break;
-
-                    	default:
-                            if (j == 0 || j == 9) {
-                                oneTd.innerHTML = a;
-                            }
-                        break;          
-                    }
-                }
+// 1
+var buttons = document.querySelectorAll("img");
+    for(var i = 0;i < 2;i++){
+        buttons[i].onclick = function(e){
+            var img = document.createElement("img");
+            img.src = "b" + (e.target.id[1]) + ".jpg";
+            img.onclick = function(){
+                this.classList.add("hide");
             }
-
-            document.body.append(oneTb);
+            document.body.append(img);
         }
-    shaxdo()
+        
+    }
+    
+    function er() {
+        alert('Картинка не найдена...!')
+    }
+
+    buttons[2].addEventListener("click", er);
+
+
+    
+// 2
+    var a = {
+    price: 0,
+    count: 0,
+    summa: 0
+}
+var b = {
+    price: 0,
+    count: 0,
+    summa: 0
+}
+var c = {
+    price: 0,
+    count: 0,
+    summa: 0
+}
+function f(id) {
+
+    
+
+    var d = document.getElementById(id);
+    var ol = document.getElementById('spis');
+    var li = document.getElementById("li_" + id);
+
+    if (li != null) {
+        switch (id) {
+            case 'a':
+                a.count = parseInt(li.innerHTML.split(' ')[1]) + 1;
+                break;
+            case 'b':
+                b.count = parseInt(li.innerHTML.split(' ')[1]) + 1;
+                break;
+            case 'c':
+                c.count = parseInt(li.innerHTML.split(' ')[1]) + 1;
+                break;
+        }
+    } else {
+        switch (id) {
+            case 'a':
+                newLi = document.createElement('li');
+                newLi.innerHTML = '';
+                newLi.id = 'li_a';
+                ol.appendChild(newLi);
+                a.count = 1;
+                break;
+            case 'b':
+                newLi = document.createElement('li');
+                newLi.innerHTML = '';
+                newLi.id = 'li_b';
+                ol.appendChild(newLi);
+                b.count = 1;
+                break;
+            case 'c':
+                newLi = document.createElement('li');
+                newLi.innerHTML = '';
+                newLi.id = 'li_c';
+                ol.appendChild(newLi);
+                c.count = 1;
+                break;
+        }
+    }
+
+
+
+    switch (id) {
+        case 'a':
+            a.price = d.getElementsByTagName('p')[0].innerHTML;
+            a.summa = a.count * a.price;
+            break;
+        case 'b':
+            b.price = d.getElementsByTagName('p')[0].innerHTML;
+            b.summa = b.count * b.price;
+            break;
+        case 'c':
+            c.price = d.getElementsByTagName('p')[0].innerHTML;
+            c.summa = c.count * c.price;
+            break;
+    }
+
+    if (li != null) {
+        switch (id) {
+            case 'a':
+                li.innerHTML = "Iphone 12: " + a.count + " total " + a.price + " in price: " + a.summa;
+                break;
+            case 'b':
+                li.innerHTML = "Iphone 12 Pro: " + b.count + "  total " + b.price + " in price: " + b.summa;
+                break;
+            case 'c':
+                li.innerHTML = "Iphone 12 Pro Max: " + c.count + "  total " + c.price + " in price: " + c.summa;
+                break;
+        }
+    } else {
+        switch (id) {
+            case 'a':
+                newLi.innerHTML = "Iphone 12: " + a.count + "  total " + a.price + " in price: " + a.summa;
+                break;
+            case 'b':
+                newLi.innerHTML = "Iphone 12 Pro: " + b.count + "  total " + b.price + " in price: " + b.summa;
+                break;
+            case 'c':
+                newLi.innerHTML = "Iphone 12 Pro Max: " + c.count + "  total " + c.price + " in price: " + c.summa;
+                break;
+        }
+    }
+
+var ii = document.getElementById('itog');
+if (ii != null){
+ii.parentNode.removeChild(ii);
+}
+
+
+var itog = document.createElement('li');
+itog.id = 'itog';
+
+ol.appendChild(itog);
+var ss = a.summa + b.summa + c.summa;
+itog.innerHTML = "TOTAL: " + ss;
+
+
+}
+
+   
