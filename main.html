@@ -7,44 +7,20 @@
     <title>Document</title>
 </head>
 <body>
-    <div class="container">
-    
-        <div id="basket">
-    
-            <h1>Goods in Basket:</h1>
-    
-            <ol id="spis">
-    
-            </ol>
-        </div>
-    
-        <div class="small">
-            <div id="a">
-                <h3> Iphone 12 </h3>
-                <p>1200</p>
-    
-                <button onclick="f(this.parentElement.id)">BUY</button>
-            </div>
-            <div id="b">
-                <h3> Iphone 12 Pro </h3>
-                <p> 1500</p>
-    
-                <button onclick="f(this.parentElement.id)">Buy</button>
-            </div>
-            <div id="c">
-                <h3>Iphone 12 Pro Max</h3>
-                <p> 2000</p>
-    
-                <button onclick="f(this.parentElement.id)">Buy</button>
+    <div class="wrap">
+        <div id="snake-field"></div>
+        <div class="buttons">
+            <div id="snake-start">Старт</div>
+            <div id="snake-renew">Новая игра</div>
+            <div id="snake-field"></div>
+            <div class="score">
+                <span class="score-snake"
+                    style="color: grey; font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">ВАШ СЧЕТ:
+                </span><span class="score-total"
+                    style="color: grey; font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;"></span>
             </div>
         </div>
-    
-    
     </div>
-
-<img id='b1' src="small-img's/s1.jpg">
-<img id='b2' src="small-img's/s2.jpg">
-<img id='b3' src="small-img's/s3.jpg" onerror='er()'>
 
     <script src="main.js"></script>
 </body>

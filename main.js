@@ -1,144 +1,315 @@
-// 1
-var buttons = document.querySelectorAll("img");
-    for(var i = 0;i < 2;i++){
-        buttons[i].onclick = function(e){
-            var img = document.createElement("img");
-            img.src = "b" + (e.target.id[1]) + ".jpg";
-            img.onclick = function(){
-                this.classList.add("hide");
+// Глобальные переменные:                            
+var FIELD_SIZE_X = 20;//строки
+var FIELD_SIZE_Y = 20;//столбцы
+var FOOD_SPEED = 5000;
+var PROBLEM_SPEED = 5000;
+var SNAKE_SPEED = 100; // Интервал между перемещениями змейки
+var snake = []; // Сама змейка
+var direction = 'y+'; // Направление движения змейки
+var gameIsRunning = false; // Запущена ли игра
+var snake_timer; // Таймер змейки
+var food_timer; // Таймер для еды
+var problem_timer;
+var score = 0; // Результат
+var btnStart = document.getElementsByClassName('snake-start');
+var btnRenew = document.getElementsByClassName('snake-renew');
+
+function init() {
+    prepareGameField(); // Генерация поля
+
+    var wrap = document.getElementsByClassName('wrap')[0];
+    // Подгоняем размер контейнера под игровое поле
+    
+	/*
+	if (16 * (FIELD_SIZE_X + 1) < 380) {
+        wrap.style.width = '380px';
+    }
+    else {
+        wrap.style.width = (16 * (FIELD_SIZE_X + 1)).toString() + 'px';
+    }
+    */
+    wrap.style.width = '400px';
+    // События кнопок Старт и Новая игра
+    document.getElementById('snake-start').addEventListener('click', startGame);
+    document.getElementById('snake-renew').addEventListener('click', refreshGame);
+
+// Отслеживание клавиш клавиатуры
+    addEventListener('keydown', changeDirection);
+}
+
+/**
+ * Функция генерации игрового поля
+ */
+function prepareGameField() {
+    // Создаём таблицу
+    var game_table = document.createElement('table');
+    
+    game_table.setAttribute('class', 'game-table');
+
+    // Генерация ячеек игровой таблицы
+    for (var i = 0; i < FIELD_SIZE_X; i++) {
+        // Создание строки
+        var row = document.createElement('tr');
+        row.className = 'game-table-row row-' + i;
+        for (var j = 0; j < FIELD_SIZE_Y; j++) {
+            // Создание ячейки
+            var cell = document.createElement('td');
+            cell.className = 'game-table-cell cell-' + i + '-' + j;
+
+            row.appendChild(cell); // Добавление ячейки
+        }
+        game_table.appendChild(row); // Добавление строки
+    }
+
+    document.getElementById('snake-field').appendChild(game_table); // Добавление таблицы
+}
+
+/**
+ * Старт игры
+ */
+function startGame() {
+   if (!gameIsRunning) {
+       gameIsRunning = true;
+       btnStart.ClassName = 'snake-start-nonactive';
+       createFood();
+       respawn();//создали змейку
+       snake_timer = setInterval(move, SNAKE_SPEED);//каждые 200мс запускаем функцию move
+       food_timer = setInterval(createFood, SNAKE_SPEED);
+       problem_timer = setInterval(createProblem, PROBLEM_SPEED); 
+    }    
+}
+
+/**
+ * Функция расположения змейки на игровом поле
+ */
+function respawn() {
+    // Змейка - массив td
+    // Стартовая длина змейки = 2
+
+    // Respawn змейки из центра
+    var start_coord_x = Math.floor(FIELD_SIZE_X / 2);
+    var start_coord_y = Math.floor(FIELD_SIZE_Y / 2);
+
+    // Хвост змейки
+    var snake_tail = document.getElementsByClassName('cell-' + start_coord_y + '-' + start_coord_x)[0];
+    snake_tail.setAttribute('class', snake_tail.getAttribute('class') + ' snake-unit');
+    // Голова змейки
+    var snake_head = document.getElementsByClassName('cell-' + (start_coord_y - 1) + '-' + start_coord_x)[0];
+    snake_head.setAttribute('class', snake_head.getAttribute('class') + ' snake-unit');
+
+    snake.push(snake_tail);
+    snake.push(snake_head);
+}
+
+/**
+ * Движение змейки
+ */
+function move() {
+    //console.log('move',direction);
+    // Сборка классов
+    var snake_head_classes = snake[snake.length - 1].getAttribute('class').split(' ');
+
+    // Сдвиг головы
+    var new_unit;
+    var snake_coords = snake_head_classes[1].split('-');//преобразовали строку в массив
+    var coord_y = parseInt(snake_coords[1]);
+    var coord_x = parseInt(snake_coords[2]);
+
+    // Определяем новую точку
+    if (direction == 'x-') {
+        new_unit = document.getElementsByClassName('cell-' + (coord_y) + '-' + (coord_x - 1))[0];
+    }
+    else if (direction == 'x+') {
+        new_unit = document.getElementsByClassName('cell-' + (coord_y) + '-' + (coord_x + 1))[0];
+    }
+    else if (direction == 'y+') {
+        new_unit = document.getElementsByClassName('cell-' + (coord_y - 1) + '-' + (coord_x))[0];
+    }
+    else if (direction == 'y-') {
+        new_unit = document.getElementsByClassName('cell-' + (coord_y + 1) + '-' + (coord_x))[0];
+    }
+
+
+    if (!haveFood(new_unit)) {
+        var removed = snake.splice(0, 1)[0];
+        var classes = removed.getAttribute('class').split(' ');
+
+        removed.setAttribute('class', classes[0] + ' ' + classes[1]);
+    }
+    else {
+        if (SNAKE_SPEED > 50) {
+            SNAKE_SPEED -= 20;
+            clearInterval(snake_timer);
+            snake_timer = setInterval(move, SNAKE_SPEED);
+        }
+    }
+
+
+    // Проверки
+    // 1) new_unit не часть змейки
+    // 2) Змейка не ушла за границу поля
+    //console.log(new_unit);
+    if (!isSnakeUnit(new_unit) && pathClear(new_unit)) {
+        // Добавление новой части змейки
+        new_unit.setAttribute('class', new_unit.getAttribute('class') + ' snake-unit');
+        snake.push(new_unit);
+
+        // Проверяем, надо ли убрать хвост
+       /* if (!haveFood(new_unit)) {
+            // Находим хвост
+            var removed = snake.splice(0, 1)[0];
+            var classes = removed.getAttribute('class').split(' ');
+
+            // удаляем хвост
+            removed.setAttribute('class', classes[0] + ' ' + classes[1]);
+        }*/
+    }
+    else {
+        finishTheGame();
+    }
+}
+
+function pathClear(unit) {
+    var check = false;
+
+    var unit_classes = unit.getAttribute('class').split(' ');
+    if(!unit_classes.includes('problem-unit')) {
+        check = true;
+    }
+    return check;
+}
+
+
+/**
+ * Проверка на змейку
+ * @param unit
+ * @returns {boolean}
+ */
+function isSnakeUnit(unit) {
+    var check = false;
+
+    if (snake.includes(unit)) {
+        check = true;
+    }
+    return check;
+}
+/**
+ * проверка на еду
+ * @param unit
+ * @returns {boolean}
+ */
+function haveFood(unit) {
+    var check = false;
+
+    var unit_classes = unit.getAttribute('class').split(' ');
+
+    // Если еда
+    if (unit_classes.includes('food-unit')) {
+        check = true;
+        createFood();
+        score++;
+        document.querySelector('.score-total').innerHTML = score;
+    }
+    return check;
+}
+
+/**
+ * Создание еды
+ */
+function createFood() {
+    var foodCreated = false;
+
+    while (!foodCreated) { //пока еду не создали
+        // рандом
+        var food_x = Math.floor(Math.random() * FIELD_SIZE_X);
+        var food_y = Math.floor(Math.random() * FIELD_SIZE_Y);
+
+        var food_cell = document.getElementsByClassName('cell-' + food_y + '-' + food_x)[0];
+        var food_cell_classes = food_cell.getAttribute('class').split(' ');
+
+        // проверка на змейку
+        if (!food_cell_classes.includes('snake-unit')) {
+            var classes = '';
+            for (var i = 0; i < food_cell_classes.length; i++) {
+                classes += food_cell_classes[i] + ' ';
             }
-            document.body.append(img);
+
+            food_cell.setAttribute('class', classes + 'food-unit');
+            foodCreated = true;
         }
+    }
+}
+
+
+function createProblem() {
+    var problemCreated = false;
+
+    while (!problemCreated) { 
         
-    }
-    
-    function er() {
-        alert('Картинка не найдена...!')
-    }
+        var problem_x = Math.floor(Math.random() * FIELD_SIZE_X);
+        var problem_y = Math.floor(Math.random() * FIELD_SIZE_Y);
 
-    buttons[2].addEventListener("click", er);
+        var problem_cell = document.getElementsByClassName('cell-' + problem_y + '-' + problem_x)[0];
+        var problem_cell_classes = problem_cell.getAttribute('class').split(' ');
 
+        // проверка на змейку
+        if (!problem_cell_classes.includes('snake-unit') && !problem_cell_classes.includes('food-unit')) {
+            var classes = '';
+            for (var i = 0; i < problem_cell_classes.length; i++) {
+                classes += problem_cell_classes[i] + ' ';
+            }
 
-    
-// 2
-    var a = {
-    price: 0,
-    count: 0,
-    summa: 0
-}
-var b = {
-    price: 0,
-    count: 0,
-    summa: 0
-}
-var c = {
-    price: 0,
-    count: 0,
-    summa: 0
-}
-function f(id) {
-
-    
-
-    var d = document.getElementById(id);
-    var ol = document.getElementById('spis');
-    var li = document.getElementById("li_" + id);
-
-    if (li != null) {
-        switch (id) {
-            case 'a':
-                a.count = parseInt(li.innerHTML.split(' ')[1]) + 1;
-                break;
-            case 'b':
-                b.count = parseInt(li.innerHTML.split(' ')[1]) + 1;
-                break;
-            case 'c':
-                c.count = parseInt(li.innerHTML.split(' ')[1]) + 1;
-                break;
-        }
-    } else {
-        switch (id) {
-            case 'a':
-                newLi = document.createElement('li');
-                newLi.innerHTML = '';
-                newLi.id = 'li_a';
-                ol.appendChild(newLi);
-                a.count = 1;
-                break;
-            case 'b':
-                newLi = document.createElement('li');
-                newLi.innerHTML = '';
-                newLi.id = 'li_b';
-                ol.appendChild(newLi);
-                b.count = 1;
-                break;
-            case 'c':
-                newLi = document.createElement('li');
-                newLi.innerHTML = '';
-                newLi.id = 'li_c';
-                ol.appendChild(newLi);
-                c.count = 1;
-                break;
+            problem_cell.setAttribute('class', classes + 'problem-unit');
+            problemCreated = true;
         }
     }
+}
 
-
-
-    switch (id) {
-        case 'a':
-            a.price = d.getElementsByTagName('p')[0].innerHTML;
-            a.summa = a.count * a.price;
+/**
+ * Изменение направления движения змейки
+ * @param e - событие
+ */
+function changeDirection(e) {
+    console.log(e);
+	switch (e.keyCode) {
+        case 37: // Клавиша влево
+            if (direction != 'x+') {
+                direction = 'x-'
+            }
             break;
-        case 'b':
-            b.price = d.getElementsByTagName('p')[0].innerHTML;
-            b.summa = b.count * b.price;
+        case 38: // Клавиша вверх
+            if (direction != 'y-') {
+                direction = 'y+'
+            }
             break;
-        case 'c':
-            c.price = d.getElementsByTagName('p')[0].innerHTML;
-            c.summa = c.count * c.price;
+        case 39: // Клавиша вправо
+            if (direction != 'x-') {
+                direction = 'x+'
+            }
+            break;
+        case 40: // Клавиша вниз
+            if (direction != 'y+') {
+                direction = 'y-'
+            }
             break;
     }
-
-    if (li != null) {
-        switch (id) {
-            case 'a':
-                li.innerHTML = "Iphone 12: " + a.count + " total " + a.price + " in price: " + a.summa;
-                break;
-            case 'b':
-                li.innerHTML = "Iphone 12 Pro: " + b.count + "  total " + b.price + " in price: " + b.summa;
-                break;
-            case 'c':
-                li.innerHTML = "Iphone 12 Pro Max: " + c.count + "  total " + c.price + " in price: " + c.summa;
-                break;
-        }
-    } else {
-        switch (id) {
-            case 'a':
-                newLi.innerHTML = "Iphone 12: " + a.count + "  total " + a.price + " in price: " + a.summa;
-                break;
-            case 'b':
-                newLi.innerHTML = "Iphone 12 Pro: " + b.count + "  total " + b.price + " in price: " + b.summa;
-                break;
-            case 'c':
-                newLi.innerHTML = "Iphone 12 Pro Max: " + c.count + "  total " + c.price + " in price: " + c.summa;
-                break;
-        }
-    }
-
-var ii = document.getElementById('itog');
-if (ii != null){
-ii.parentNode.removeChild(ii);
 }
 
-
-var itog = document.createElement('li');
-itog.id = 'itog';
-
-ol.appendChild(itog);
-var ss = a.summa + b.summa + c.summa;
-itog.innerHTML = "TOTAL: " + ss;
-
-
+/**
+ * Функция завершения игры
+ */
+function finishTheGame() {
+    gameIsRunning = false;
+    clearInterval(snake_timer);
+    alert('Вы проиграли! Ваш результат: ' + score.toString());
 }
 
-   
+/**
+ * Новая игра
+ */
+function refreshGame() {
+    location.reload();
+}
+
+// Инициализация
+window.onload = init;
