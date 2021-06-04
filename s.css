@@ -1,30 +1,48 @@
+.score-text {
+    color: grey;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+
+.score-point {
+    color: grey;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
 
 #snake-field{
-    display: inline-block;
+    display: inline-block; 
 }
-#snake-renew,#snake-start{
-    width: 150px;
+.snake-renew, .snake-start, .snake-start-nonactive {
+    width: 140px;
     padding: 15px;
     color: white;
     background-color: green;
     text-align: center;
     cursor: pointer;
-    float: left;
+    float: left; 
+}
+.snake-start, .snake-start-nonactive {
     margin-right: 10px;
 }
+.snake-start-nonactive{
+    background-color: #005300;
+}
+
 .game-table{
     border-collapse: collapse;
     background-color: #3e3e3e;
 }
 td.game-table-cell{
     width: 15px;
-    height: 15px;
+    height: 15px;                                  
     border: 1px dotted #eee;
 }
 .snake-unit{
     background-color: white;
 }
 .food-unit{
+    background-color: rgb(59, 190, 113);
+}
+.problem-unit {
     background-color: red;
 }
 .buttons{

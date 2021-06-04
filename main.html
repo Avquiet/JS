@@ -1,27 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet"  href="s.css">
-    <title>Document</title>
+    <title>Snake</title>
+    <link rel="stylesheet" href="s.css">
+    <script src="main.js" defer></script>
 </head>
+
 <body>
     <div class="wrap">
-        <div id="snake-field"></div>
         <div class="buttons">
-            <div id="snake-start">Старт</div>
-            <div id="snake-renew">Новая игра</div>
-            <div id="snake-field"></div>
-            <div class="score">
-                <span class="score-snake"
-                    style="color: grey; font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">ВАШ СЧЕТ:
-                </span><span class="score-total"
-                    style="color: grey; font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;"></span>
-            </div>
+            <div class="snake-start">START</div>
+            <div class="snake-renew">NEW GAME</div>
+        </div>
+        <div id="snake-field"></div>
+        <div class="score">
+            <span class="score-text">SCORE: </span><span class="score-point"></span>
         </div>
     </div>
-
-    <script src="main.js"></script>
 </body>
+
 </html>
