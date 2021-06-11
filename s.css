@@ -1,54 +1,47 @@
-.score-text {
-    color: grey;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+.products {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 auto;
+    font-family:Georgia, 'Times New Roman', Times, serif;
+    height: 1100px;
 }
 
-.score-point {
-    color: grey;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+.item-1 {
+    margin-left: 50px;
+    color:cadetblue;
 }
 
-#snake-field{
-    display: inline-block; 
+.item-2 {
+    margin-left: 100px;
+    color: red;
 }
-.snake-renew, .snake-start, .snake-start-nonactive {
-    width: 140px;
-    padding: 15px;
-    color: white;
-    background-color: green;
-    text-align: center;
+
+.buy-btn {
+    padding: 5px;
+    margin-left: 150px;
     cursor: pointer;
-    float: left; 
-}
-.snake-start, .snake-start-nonactive {
-    margin-right: 10px;
-}
-.snake-start-nonactive{
-    background-color: #005300;
+    border: 1px solid gray;
+    background: orangered;
+    color: yellowgreen;
+    margin-top: 10px;
 }
 
-.game-table{
-    border-collapse: collapse;
-    background-color: #3e3e3e;
+.btn-cart {
+    width: 100%;
+    margin: 0 auto;
+    position: absolute;
+    top: 350px;
+    background-color: goldenrod;
+    border: red;
+    cursor: pointer;
+    padding-bottom: 15px;
 }
-td.game-table-cell{
-    width: 15px;
-    height: 15px;                                  
-    border: 1px dotted #eee;
+
+.svg {
+    padding-top: 12px;
 }
-.snake-unit{
-    background-color: white;
+
+.bas {
+    padding-left: 20px;
 }
-.food-unit{
-    background-color: rgb(59, 190, 113);
-}
-.problem-unit {
-    background-color: red;
-}
-.buttons{
-    display: inline-block;
-}
-.wrap{
-    margin: 30px auto 0;
-    text-align: center;
-}
+
