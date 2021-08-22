@@ -1,340 +1,281 @@
-// Глобальные переменные:  
-var FIELD_SIZE_X = 20;
-var FIELD_SIZE_Y = 20;
-var SNAKE_SPEED = 100;      // Интервал между перемещениями змейки
-var FOOD_SPEED = 5000;      // Интервад между созданием еды
-var PROBLEM_SPEED = 5000;   // интервал межуд созданием проблем =)
-var snake = [];             // Сама змейка
-var direction = 'y+';        // Направление движения змейки
-var gameIsRunning = false;  // Запущена ли игра
-var snake_timer;            // Таймер змейки
-var food_timer;             // Таймер еды
-var problem_timer;          // Таймер проблем
-var score = 0;              // Результат
-var btnStart =  document.getElementsByClassName('snake-start')[0];  //кнопка старта;
-var btnRenew = document.getElementsByClassName('snake-renew')[0];   //кнопка рестарта
-var points = document.getElementsByClassName('score-point')[0];     //показатель счет
+//Отправляйте свои данные с помощью $emit в верхний компонент, а вниз с помощью props
+const API = 'https://raw.githubusercontent.com/GeekBrainsTutorial/online-store-api/master/responses';
 
-function init() {
-    prepareGameField(); // Генерация поля
-    points.innerHTML = score;
-    var wrap = document.getElementsByClassName('wrap')[0];
-    // Подгоняем размер контейнера под игровое поле
-    if (16 * (FIELD_SIZE_X + 1) < 380) {
-        wrap.style.width = '380px';
-    }                                                                   
-    else {
-        wrap.style.width = (16 * (FIELD_SIZE_X + 1)).toString() + 'px';
-    }
-
-    // События кнопок Старт и Новая игра
-    btnStart.addEventListener('click', startGame);
-    btnRenew.addEventListener('click', refreshGame);
-
-// Отслеживание клавиш клавиатуры
-    addEventListener('keydown', changeDirection);
-}
-
-/**
- * Функция генерации игрового поля
- */
-function prepareGameField() {
-    // Создаём таблицу
-    var game_table = document.createElement('table');
-    game_table.setAttribute('class', 'game-table');
-
-    // Генерация ячеек игровой таблицы
-    for (var i = 0; i < FIELD_SIZE_Y; i++) {
-        // Создание строки
-        var row = document.createElement('tr');
-        row.className = 'game-table-row row-' + i;
-
-        for (var j = 0; j < FIELD_SIZE_X; j++) {
-            // Создание ячейки
-            var cell = document.createElement('td');
-            cell.className = 'game-table-cell cell-' + i + '-' + j;
-
-            row.appendChild(cell); // Добавление ячейки
+const app = new Vue({
+    el: '#app',
+    data: {
+        userSearch: '',
+        showCart: false,
+        catalogUrl: '/catalogData.json',
+        cartUrl: '/getBasket.json',
+        cartItems: [],
+        filtered: [],
+        imgCart: 'https://placehold.it/50x100',
+        products: [],
+        imgProduct: 'https://placehold.it/200x150',
+        error: false
+    },
+    methods: {
+        getJson(url){
+            return fetch(url)
+                .then(result => result.json())
+                .catch(_error => serverError = true) 
+                    
+        },
+        addProduct(item){
+            this.getJson(`${API}/addToBasket.json`)
+                .then(data => {
+                    if(data.result === 1){
+                       let find = this.cartItems.find(el => el.id_product === item.id_product);
+                       if(find){
+                           find.quantity++;
+                       } else {
+                           const prod = Object.assign({quantity: 1}, item);
+                           this.cartItems.push(prod)
+                       }
+                    }
+                })
+        },
+        remove(item){
+            this.getJson(`${API}/addToBasket.json`)
+                .then(data => {
+                    if (data.result === 1) {
+                        if(item.quantity>1){
+                            item.quantity--;
+                        } else {
+                            this.cartItems.splice(this.cartItems.indexOf(item), 1);
+                        }
+                    }
+                    
+                })
+        },
+        filter(){
+            let regexp = new RegExp(this.userSearch, 'i');
+            this.filtered = this.products.filter(el => regexp.test(el.product_name));
         }
-        game_table.appendChild(row); // Добавление строки
+    },
+    mounted(){
+        this.getJson(`${API + this.cartUrl}`)
+            .then(data => {
+                for (let item of data.contents){
+                    this.$data.cartItems.push(item);
+                }
+            });
+        this.getJson(`${API + this.catalogUrl}`)
+            .then(data => {
+                for (let item of data){
+                    this.$data.products.push(item);
+                    this.$data.filtered.push(item);
+                }
+            });
+        /*this.getJson(`getProducts.json`)
+            .then(data => {
+                for(let item of data){
+                    this.$data.products.push(item);
+                    this.$data.filtered.push(item);
+                }
+            })*/
     }
 
-    document.getElementById('snake-field').appendChild(game_table); // Добавление таблицы
-}
-
-/**
- * Старт игры
- */
-function startGame() {
-    if (!gameIsRunning) {
-        gameIsRunning = true;
-        btnStart.className = "snake-start-nonactive";
-        createFood();
-        respawn();
-        snake_timer = setInterval(move, SNAKE_SPEED);
-        food_timer = setInterval(createFood, FOOD_SPEED);
-        problem_timer = setInterval(createProblem, PROBLEM_SPEED);
-    }
-}
-
-/**
- * Функция расположения змейки на игровом поле
- */
-function respawn() {
-    // Змейка - массив td
-    // Стартовая длина змейки = 2
-
-    // Respawn змейки из центра
-    var start_coord_x = Math.floor(FIELD_SIZE_X / 2);
-    var start_coord_y = Math.floor(FIELD_SIZE_Y / 2);
-
-    // Голова змейки
-    var snake_head = document.getElementsByClassName('cell-' + start_coord_y + '-' + start_coord_x)[0];
-    snake_head.setAttribute('class', snake_head.getAttribute('class') + ' snake-unit');
-    // Тело змейки
-    var snake_tail = document.getElementsByClassName('cell-' + (start_coord_y - 1) + '-' + start_coord_x)[0];
-    snake_tail.setAttribute('class', snake_tail.getAttribute('class') + ' snake-unit');
-
-    snake.push(snake_head);
-    snake.push(snake_tail);
-    points.innerHTML = score;
-}
-
-/**
- * Движение змейки
- */
-function move() {
-    //console.log('move',direction);
-    // Сборка классов
-    var snake_head_classes = snake[snake.length - 1].getAttribute('class').split(' ');
-
-    // Сдвиг головы
-    var new_unit;
-    var snake_coords = snake_head_classes[1].split('-');
-    var coord_y = parseInt(snake_coords[1]);
-    var coord_x = parseInt(snake_coords[2]);
-
-    // Определяем новую точку
-    if (direction == 'x-') {
-        new_unit = document.getElementsByClassName('cell-' + (coord_y) + '-' + (coord_x - 1))[0];
-    }
-    else if (direction == 'x+') {
-        new_unit = document.getElementsByClassName('cell-' + (coord_y) + '-' + (coord_x + 1))[0];
-    }
-    else if (direction == 'y+') {
-        new_unit = document.getElementsByClassName('cell-' + (coord_y - 1) + '-' + (coord_x))[0];
-    }
-    else if (direction == 'y-') {
-        new_unit = document.getElementsByClassName('cell-' + (coord_y + 1) + '-' + (coord_x))[0];
-    }
-
-    if (new_unit === undefined) {
-        new_unit = headTeleport(coord_y, coord_x);
-    }
-
-    if (!haveFood(new_unit)) {
-        // Находим хвост
-        var removed = snake.splice(0, 1)[0];
-        var classes = removed.getAttribute('class').split(' ');
-
-        // удаляем хвост
-        removed.setAttribute('class', classes[0] + ' ' + classes[1]);
-    }
-    else {
-        if (SNAKE_SPEED > 50) {
-            SNAKE_SPEED -= 20;
-            clearInterval(snake_timer);
-            snake_timer = setInterval(move, SNAKE_SPEED);
-        }
-    }
+});
 
 
-    // Проверки:
-    // 1) new_unit не часть змейки
-    // 2) не врезались в препятствие
-    if (!isSnakeUnit(new_unit) && pathClear(new_unit)) {
-        // Добавление новой части змейки
-        new_unit.setAttribute('class', new_unit.getAttribute('class') + ' snake-unit');
-        snake.push(new_unit);
+// class List {
+//     constructor(url, container){
+//         this.container = container;
+//         this.url = url;
+//         this.goods = [];
+//         this.allProducts = [];
+//         this.filtered = [];
+//         this._init();
+//     }
+//     getJson(url){
+//         return fetch(url ? url : `${API + this.url}`)
+//             .then(result => result.json())
+//             .catch(error => console.log(error))
+//     }
+//     calcSum(){
+//         return this.allProducts.reduce((accum, item) => accum += item.price, 0);
+//     }
+//     handleData(data){
+//         this.goods = data;
+//         this.render();
+//     }
+//     render(){
+//         const block = document.querySelector(this.container);
+//         for (let product of this.goods){
+//             const productObj = new list[this.constructor.name](product);
+//             this.allProducts.push(productObj);
+//             block.insertAdjacentHTML('beforeend', productObj.render());
+//         }
+//     }
+//     filter(value){
+//         const regexp = new RegExp(value, 'i');
+//         this.filtered = this.allProducts.filter(product => regexp.test(product.product_name));
+//         this.allProducts.forEach(el => {
+//             const block = document.querySelector(`.product-item[data-id="${el.id_product}"]`);
+//             if(!this.filtered.includes(el)){
+//                 block.classList.add('invisible');
+//             } else {
+//                 block.classList.remove('invisible');
+//             }
+//         })
+//     }
+//     _init(){
+//         return false
+//     }
+// }
+// class Item {
+//     constructor(el, img = 'https://placehold.it/200x150'){
+//         this.product_name = el.product_name;
+//         this.price = el.price;
+//         this.img = img;
+//         this.id_product = el.id_product
+//     }
+//
+//     render(){
+//         return `<div class="product-item" data-id="${this.id_product}">
+//                     <img src="${this.img}" alt="Some img">
+//                     <div class="desc">
+//                         <h3>${this.product_name}</h3>
+//                         <p>${this.price} $</p>
+//                         <button class="buy-btn"
+//                         data-id="${this.id_product}"
+//                         data-price="${this.price}"
+//                         data-name="${this.product_name}"
+//                         data-img="${this.img}">
+//                         Купить
+// </button>
+//                     </div>
+//                 </div>`;
+//
+//     }
+// }
+//
+//
+// class ProductsList extends List {
+//     constructor(cart, url = '/catalogData.json',container = '.products'){
+//         super(url, container);
+//         this.cart = cart;
+//         this.getJson()
+//             .then(data => this.handleData(data));
+//     }
+//     _init(){
+//         document.querySelector(this.container).addEventListener('click', e => {
+//             if(e.target.classList.contains('buy-btn')){
+//                 this.cart.addProduct(e.target);
+//             }
+//         });
+//         document.querySelector('.search-form').addEventListener('submit', e => {
+//             e.preventDefault();
+//             this.filter(document.querySelector('.search-field').value);
+//         })
+//     }
+// }
+//
+// class Product extends Item{}
+// class Cart extends List{
+//     constructor(url = '/getBasket.json', container = '.cart-block'){
+//         super(url, container);
+//         this.getJson()
+//             .then(data => this.handleData(data.contents));
+//     }
+//     addProduct(element){
+//         this.getJson(`${API}/addToBasket.json`)
+//             .then(data => {
+//                 if(data.result === 1){
+//                     let productId = +element.dataset['id'];
+//                     let find = this.allProducts.find(product => product.id_product === productId);
+//                     if(find){
+//                         find.quantity++;
+//                         this._updateCart(find);
+//                     } else {
+//                         let product = {
+//                             id_product: productId,
+//                             price: +element.dataset['price'],
+//                             product_name: element.dataset['name'],
+//                             quantity: 1
+//                         };
+//                         this.goods = [product];
+//                         this.render();
+//                     }
+//                 } else {
+//                     alert('Error')
+//                 }
+//             })
+//     }
+//     removeProduct(element){
+//         this.getJson(`${API}/deleteFromBasket.json`)
+//             .then(data => {
+//                 if(data.result === 1){
+//                     let productId = +element.dataset['id'];
+//                     let find = this.allProducts.find(product => product.id_product === productId);
+//                     if(find.quantity > 1){
+//                         find.quantity--;
+//                         this._updateCart(find);
+//                     } else {
+//                         this.allProducts.splice(this.allProducts.indexOf(find), 1);
+//                         document.querySelector(`.cart-item[data-id="${productId}"]`).remove();
+//                     }
+//                 } else {
+//                     alert('Error')
+//                 }
+//             })
+//     }
+//     _updateCart(product){
+//         const block = document.querySelector(`.cart-item[data-id="${product.id_product}"]`);
+//         block.querySelector(`.product-quantity`).textContent = `Quantity: ${product.quantity}`;
+//         block.querySelector(`.product-price`).textContent = `$${product.quantity*product.price}`;
+//     }
+//     _init(){
+//         document.querySelector(this.container).addEventListener('click', e => {
+//             if(e.target.classList.contains('del-btn')){
+//                 this.removeProduct(e.target);
+//             }
+//         });
+//         document.querySelector('.btn-cart').addEventListener('click', () => {
+//             document.querySelector(this.container).classList.toggle('invisible')
+//         })
+//     }
+// }
+//
+// class CartItem extends Item{
+//     constructor(el, img = 'https://placehold.it/50x100'){
+//         super(el, img);
+//         this.quantity = el.quantity;
+//     }
+//     render(){
+//         return `<div class="cart-item" data-id="${this.id_product}">
+//     <div class="product-bio">
+//         <img src="${this.img}" alt="Some image">
+//         <div class="product-desc">
+//             <p class="product-title">${this.product_name}</p>
+//             <p class="product-quantity">Quantity: ${this.quantity}</p>
+//             <p class="product-single-price">$${this.price} each</p>
+//         </div>
+//     </div>
+//     <div class="right-block">
+//         <p class="product-price">${this.quantity*this.price}</p>
+//         <button class="del-btn" data-id="${this.id_product}">&times;</button>
+//     </div>
+// </div>`
+//     }
+// }
+//
+// const list = {
+//     ProductsList: Product,
+//     Cart: CartItem
+// };
+//
+//
+// const cart = new Cart();
+// const products = new ProductsList(cart);
+// setTimeout(() => {
+//     products.getJson(`getProducts.json`).then(data => products.handleData(data));
+// }, 300);
 
-        // Проверяем, надо ли убрать хвост
-    }
-    else {
-        finishTheGame();
-    }
-}
-
-/**
- * Функция переноса змейки на другую сторону
- * @param coord_y
- * @param coord_x
- * @returns {*}
- */
-function headTeleport(coord_y, coord_x) {
-    var unit;
-    if (direction == 'x-') {
-        unit = document.getElementsByClassName('cell-' + (coord_y) + '-' + (FIELD_SIZE_X-1))[0];
-    }
-    else if (direction == 'x+') {
-        unit = document.getElementsByClassName('cell-' + (coord_y) + '-' + (0))[0];
-    }
-    else if (direction == 'y+') {
-        unit = document.getElementsByClassName('cell-' + (FIELD_SIZE_Y-1) + '-' + (coord_x))[0];
-    }
-    else if (direction == 'y-') {
-        unit = document.getElementsByClassName('cell-' + (0) + '-' + (coord_x))[0];
-    }
-    return unit;
-}
-
-/**
- * Функция проверки, не врезались ли мы в преграду
- * @param unit
- */
-function pathClear(unit) {
-    var check = false;
-
-    var unit_classes = unit.getAttribute('class').split(' ');
-    if (!unit_classes.includes('problem-unit')) {
-        check = true;
-    }
-    return check;
-}
-
-/**
- * Проверка на змейку
- * @param unit
- * @returns {boolean}
- */
-function isSnakeUnit(unit) {
-    var check = false;
-
-    if (snake.includes(unit)) {
-        check = true;
-    }
-    return check;
-}
-/**
- * проверка на еду
- * @param unit
- * @returns {boolean}
- */
-function haveFood(unit) {
-    var check = false;
-
-    var unit_classes = unit.getAttribute('class').split(' ');
-
-    // Если еда
-    if (unit_classes.includes('food-unit')) {
-        check = true;
-        createFood();
-        score++;
-        document.querySelector('.score-point').innerHTML = score; //Счет считается с помощью онлайн
-    }
-    return check;
-}
-
-/**
- * Создание еды
- */
-function createFood() {
-    var foodCreated = false;
-
-    while (!foodCreated) {
-        // рандом
-        var food_x = Math.floor(Math.random() * FIELD_SIZE_X);
-        var food_y = Math.floor(Math.random() * FIELD_SIZE_Y);
-
-        var food_cell = document.getElementsByClassName('cell-' + food_y + '-' + food_x)[0];
-        var food_cell_classes = food_cell.getAttribute('class').split(' ');
-
-        // проверка на змейку
-        if (!food_cell_classes.includes('snake-unit') && !food_cell_classes.includes('problem-unit')) {
-            var classes = '';
-            for (var i = 0; i < food_cell_classes.length; i++) {
-                classes += food_cell_classes[i] + ' ';
-            }
-
-            food_cell.setAttribute('class', classes + 'food-unit');
-            foodCreated = true;
-        }
-    }
-}
-
-/**problem-unit
- * Функция созданяи препятствий-проблем для нашей змейки
- */
-function createProblem() {
-    var problemCreated = false;
-
-    while (!problemCreated) {
-        // рандом
-        var problem_x = Math.floor(Math.random() * FIELD_SIZE_X);
-        var problem_y = Math.floor(Math.random() * FIELD_SIZE_Y);
-
-        var problem_cell = document.getElementsByClassName('cell-' + problem_y + '-' + problem_x)[0];
-        var problem_cell_classes = problem_cell.getAttribute('class').split(' ');
-
-        // проверка на змейку
-        if (!problem_cell_classes.includes('snake-unit') && !problem_cell_classes.includes('food-unit')) {
-            var classes = '';
-            for (var i = 0; i < problem_cell_classes.length; i++) {
-                classes += problem_cell_classes[i] + ' ';
-            }
-            problem_cell.setAttribute('class', classes + 'problem-unit');
-            problemCreated = true;
-        }
-    }
-}
+// list.getProducts(() => {
+//     list.render();
+// });
 
 
-
-/**
- * Изменение направления движения змейки
- * @param e - событие
- */
-function changeDirection(e) {
-    switch (e.keyCode) {
-        case 37: // Клавиша влево
-            if (direction != 'x+') {
-                direction = 'x-'
-            }
-            break;
-        case 38: // Клавиша вверх
-            if (direction != 'y-') {
-                direction = 'y+'
-            }
-            break;
-        case 39: // Клавиша вправо
-            if (direction != 'x-') {
-                direction = 'x+'
-            }
-            break;
-        case 40: // Клавиша вниз
-            if (direction != 'y+') {
-                direction = 'y-'
-            }
-            break;
-    }
-}
-
-/**
- * Функция завершения игры
- */
-function finishTheGame() {
-    gameIsRunning = false;
-    clearInterval(snake_timer);
-    clearInterval(food_timer);
-    clearInterval(problem_timer);
-    alert('Вы проиграли! Ваш результат: ' + score.toString());
-}
-
-/**
- * Новая игра
- */
-function refreshGame() {
-    location.reload();
-}
-
-// Инициализация
-window.onload = init;
